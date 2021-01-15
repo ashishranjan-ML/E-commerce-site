@@ -1,0 +1,129 @@
+{% extends 'eshop/basic.html' %}
+
+{% block title %}check out {% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="col my-4">
+        <h2>Track your order</h2>
+        <form class="row g-3" method="post" action="#" id="trackerform">{% csrf_token%}
+        <div class="form-group col-md-6">
+                <label for="orderid" class="form-label">Order Id</label>
+                <input type="text" class="form-control" id="orderid" name="orderid" placeholder="Enter Order Id">
+            </div>
+
+               <div class="form-group col-md-6">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter Email">
+            </div>
+            <div class="form-group col-12 my-4">
+                <button type="submit" class="btn btn-primary">Track Order</button>
+            </div>
+
+        <div class="my-4">
+            <h2>Your Order Status</h2>
+            <ul class="list-group" id="items">
+                Enter your order Id and Email and click Track Order to find details about your order!
+            </ul>
+        </div>
+            <div class="my-4">
+            <h2>Your Order details:</h2>
+            <ul class="list-group" id="citems">
+
+            </ul>
+        </div>
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+<!--to show number of product in cart-->
+if(localStorage.getItem('cart') == null){
+var cart = {};
+}
+else {
+cart=JSON.parse(localStorage.getItem('cart'));
+sumcart(cart);
+
+}
+
+function sumcart(cart){
+if ($.isEmptyObject(cart)){
+var sumcart =0;
+localStorage.setItem('cart', JSON.stringify(cart));
+document.getElementById('cart').innerHTML=sumcart;
+}
+else
+{
+var sumcart =0;
+for (var item in cart){
+sumcart=sumcart + cart[item][0];
+localStorage.setItem('cart', JSON.stringify(cart));
+document.getElementById('cart').innerHTML=sumcart;
+};
+};
+};
+
+<!--____________-->
+
+
+$('#trackerform').submit(function(event){
+$('#items').empty();
+var formData={
+'orderid': $('input[name=orderid]').val(),
+'email':$('input[name=email]').val(),
+'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+}
+$.ajax({
+type:'post',
+url:'/shop/tracker',
+data: formData,
+encode: true
+}).done(function(data){
+$('#citems').empty();
+<!--console.log(data)-->
+data=JSON.parse(data);
+
+if(data['status'] == 'success'){
+updates = data['updates'];
+for (i=0; i<updates.length; i++){
+let text = updates[i]['text'];
+let time = updates[i]['time'];
+mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">${text}
+         <span class="class="badge bg-primary rounded-pill">${time}</spam></li>`
+$('#items').append(mystr);
+}
+<!--fill the order details-->
+cart=JSON.parse(data['itemjson']);
+console.log(cart)
+for (item in cart){
+let name = cart[item][1];
+let qty = cart[item][0];
+mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${name}
+                    <span class="badge bg-primary rounded-pill">${qty}</span>
+                </li>`
+$('#citems').append(mystr);
+}
+}
+else {
+mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">Sorry, We are unable to fetch this
+         order Id and Email. Make sure to type correct order Id and Email.
+         </li>`
+$('#items').append(mystr);
+$('#citems').append(mystr);
+}
+
+
+
+});
+event.preventDefault();
+});
+</script>
+
+{% endblock %}

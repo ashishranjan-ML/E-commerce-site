@@ -1,0 +1,93 @@
+{% extends 'eshop/basic.html' %}
+
+{% block title %} My Cart {% endblock %}
+
+{% block body %}
+<h3 class="text-center my-4"> Cart for your selected items! </h3>
+<div class="container my-4">
+<!--    <div class="row">-->
+<!--<form class="row g-3" method="post" action="#" id="cartform">{% csrf_token%}-->
+    <div class="col-md-8 offset-md-2">
+         <div class="my-4">
+
+            <ul class="list-group" id="cartitem">
+
+            </ul>
+        </div>
+
+    </div>
+<!--        </form>-->
+    </div>
+<!--</div>-->
+
+{% endblock %}
+{% block js %}
+<script>
+if(localStorage.getItem('cart') == null){
+var cart = {};
+}
+else {
+cart=JSON.parse(localStorage.getItem('cart'));
+console.log(cart)
+sumcart(cart);
+CartShow(cart);
+}
+
+
+
+<!--$('#popcart').submit(function()-->
+<!--function cart){-->
+function CartShow(cart){
+if ($.isEmptyObject(cart)){
+$('#cartitem').empty();
+mystr=`<li class="list-group-item">Your cart is empty!</li>`
+$('#cartitem').append(mystr);
+}
+else
+{
+var popStr="";
+var i=1;
+for (var item in cart){
+popStr="<b>" + i  +  "</b>. ";
+<!--popStr=popStr + document.getElementById('name' + item ).innerHTML.slice(0, 20) + "...Qty:" + cart[item][0] + '<br>';-->
+popStr=popStr + cart[item][1] + "...Qty:" + cart[item][0] + '<br>';
+ids=item.slice(2,);
+mystr = `<a href="/shop/productview/${ids}" class="list-group-item list-group-item-action">${popStr}</a>`
+$('#cartitem').append(mystr);
+i=i+1;
+popStr="";
+}
+pop= "</div> <a href='/shop/checkout'><button class='btn btn-primary' id ='checkout'>Checkout</button></a> <button class='btn btn-primary' onclick='clearCart()' id ='clearCart'>Clear Cart</button>     ";
+<!--document.getElementById("cartshow").setAttribute('data-content', pop);-->
+mystr = `<li class="list-group-item">${pop}</li>`
+$('#cartitem').append(mystr);
+}
+};
+
+function clearCart(){
+cart=JSON.parse(localStorage.getItem('cart'));
+localStorage.clear();
+cart={};
+sumcart(cart);
+<!--updateCart(cart);-->
+CartShow(cart);
+};
+
+function sumcart(cart){
+if ($.isEmptyObject(cart)){
+var sumcart =0;
+localStorage.setItem('cart', JSON.stringify(cart));
+document.getElementById('cart').innerHTML=sumcart;
+}
+else
+{
+var sumcart =0;
+for (var item in cart){
+sumcart=sumcart + cart[item][0];
+localStorage.setItem('cart', JSON.stringify(cart));
+document.getElementById('cart').innerHTML=sumcart;
+};
+};
+};
+ </script>
+{% endblock %}
